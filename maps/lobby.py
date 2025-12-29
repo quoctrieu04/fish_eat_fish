@@ -1,6 +1,6 @@
-# maps/lobby.py
 import pygame
 import os
+import math
 from config.settings import *
 from utils.button import Button
 
@@ -8,6 +8,7 @@ from utils.button import Button
 class Lobby:
     def __init__(self, screen):
         self.screen = screen
+        self.clock = pygame.time.Clock()
 
         # ===== LOAD BACKGROUND =====
         bg_path = os.path.join("assets", "backgrounds", "lobby.png")
@@ -17,62 +18,86 @@ class Lobby:
             (SCREEN_WIDTH, SCREEN_HEIGHT)
         )
 
+        # ===== LOAD ICON =====
+        icon_path = os.path.join("assets", "icons", "fishicon.png")
+        self.icon = pygame.image.load(icon_path).convert_alpha()
+        self.icon = pygame.transform.smoothscale(self.icon, (32, 32))
+
         # ===== FONT =====
         font_path = "assets/fonts/BeVietnamPro-Bold.ttf"
         self.font_title = pygame.font.Font(font_path, 56)
         self.font_btn = pygame.font.Font(font_path, 30)
-        
+
+        # ===== ANIMATION =====
+        self.alpha = 0
+        self.slide_y = -40
+        self.fade_speed = 6
+
+        # ===== BUTTON LAYOUT =====
+        BTN_W, BTN_H = 240, 55
+        GAP = 40
+
+        total_width = BTN_W * 2 + GAP
+        start_x = SCREEN_WIDTH // 2 - total_width // 2
+        left_x = start_x
+        right_x = start_x + BTN_W + GAP
+
+        row1_y = 220
+        row2_y = 290
+
+        self.buttons = []
+
         self.btn1_player_btn = Button(
-            x=SCREEN_WIDTH // 2 - 120,
-            y=200,
-            w=240,
-            h=55,
-            text="1 Player",
-            font=self.font_btn,
-            color=BLUE,
-            hover_color=DARK_BLUE
+            left_x, row1_y, BTN_W, BTN_H,
+            "1 Player", self.font_btn,
+            BLUE, DARK_BLUE,
+            rounded=16,
+            icon=self.icon
         )
+
         self.btn2_player_btn = Button(
-            x=SCREEN_WIDTH // 2 - 120,
-            y=260,
-            w=240,
-            h=55,
-            text="2 Player",
-            font=self.font_btn,
-            color=BLUE,
-            hover_color=DARK_BLUE
+            right_x, row1_y, BTN_W, BTN_H,
+            "2 Player", self.font_btn,
+            BLUE, DARK_BLUE,
+            rounded=16,
+            icon=self.icon
         )
 
-        # ===== BUTTON START =====
-        self.exit_btn = Button(
-            x=SCREEN_WIDTH // 2 - 120,
-            y=320,
-            w=240,
-            h=55,
-            text="Exit",
-            font=self.font_btn,
-            color=BLUE,
-            hover_color=DARK_BLUE
-        )
-
-        # ===== BUTTON EXIT =====
         self.setting_btn = Button(
-            x=SCREEN_WIDTH // 2 - 120,
-            y=380,
-            w=240,
-            h=55,
-            text="Setting",
-            font=self.font_btn,
-            color=(200, 60, 60),
-            hover_color=(160, 40, 40)
+            left_x, row2_y, BTN_W, BTN_H,
+            "Setting", self.font_btn,
+            (200, 60, 60), (160, 40, 40),
+            rounded=16,
+            icon=self.icon
         )
-        
+
+        self.exit_btn = Button(
+            right_x, row2_y, BTN_W, BTN_H,
+            "Exit", self.font_btn,
+            BLUE, DARK_BLUE,
+            rounded=16,
+            icon=self.icon
+        )
+
+        self.buttons = [
+            self.btn1_player_btn,
+            self.btn2_player_btn,
+            self.setting_btn,
+            self.exit_btn
+        ]
 
     def run(self):
         running = True
         while running:
-            # ===== DRAW BACKGROUND =====
+            self.clock.tick(60)
+
+            # ===== BACKGROUND =====
             self.screen.blit(self.background, (0, 0))
+
+            # ===== FADE + SLIDE =====
+            if self.alpha < 255:
+                self.alpha += self.fade_speed
+                self.slide_y += 2
 
             # ===== TITLE =====
             title = self.font_title.render(
@@ -80,35 +105,33 @@ class Lobby:
                 True,
                 WHITE
             )
+            title.set_alpha(self.alpha)
             self.screen.blit(
                 title,
-                title.get_rect(center=(SCREEN_WIDTH // 2, 140))
+                title.get_rect(center=(SCREEN_WIDTH // 2, 130 + self.slide_y))
             )
 
             # ===== BUTTONS =====
-            self.btn1_player_btn.draw(self.screen)
-            self.btn2_player_btn.draw(self.screen)
-            self.exit_btn.draw(self.screen)
-            self.setting_btn.draw(self.screen)
-            
+            for btn in self.buttons:
+                btn.update_hover_effect()
+                btn.draw(self.screen, offset_y=self.slide_y, alpha=self.alpha)
 
             # ===== EVENTS =====
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     quit()
-                    
+
                 if self.btn1_player_btn.is_clicked(event):
-                   # print("👉 Chọn chế độ 1 người chơi")   
-                    return 1   # sau này đổi sang scene chọn cá
+                    return 1
+
                 if self.btn2_player_btn.is_clicked(event):
-                    print("👉 Chọn chế độ 2 người chơi")
-                    running = False   # sau này đổi sang scene chọn cá
-                    
-                    
+                    print("👉 2 Player")
+                    running = False
+
                 if self.setting_btn.is_clicked(event):
-                    print("Cài đặt")
-                    running = False   # sau này đổi sang scene chọn cá
+                    print("👉 Setting")
+                    running = False
 
                 if self.exit_btn.is_clicked(event):
                     pygame.quit()

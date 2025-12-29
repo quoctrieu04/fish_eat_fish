@@ -1,7 +1,7 @@
-# core/game.py
 import pygame
 from config.settings import *
 from maps.lobby import Lobby
+from maps.select_fish import SelectFish
 from core.game_scene import GameScene
 
 
@@ -13,18 +13,38 @@ class Game:
         )
         pygame.display.set_caption("Fish Eat Fish")
         self.clock = pygame.time.Clock()
+        self.running = True
 
     def run(self):
-        while True:
-            # ===== MENU =====
-            lobby = Lobby(self.screen)
-            mode = lobby.run()   # nhận 1 hoặc 2 hoặc None
+        scene = "LOBBY"
+        selected_fish = None
 
-            # ===== 1 NGƯỜI CHƠI =====
-            if mode == 1:
-                game_scene = GameScene(self.screen)
+        while self.running:
+            if scene == "LOBBY":
+                lobby = Lobby(self.screen)
+                result = lobby.run()
+
+                if result == 1:
+                    scene = "SELECT_FISH"
+                elif result is None:
+                    self.running = False
+
+            elif scene == "SELECT_FISH":
+                select_fish = SelectFish(self.screen)
+                result = select_fish.run()
+
+                if result:
+                    selected_fish = result
+                    scene = "GAME"
+                else:
+                    scene = "LOBBY"
+
+            elif scene == "GAME":
+                game_scene = GameScene(self.screen, selected_fish)
                 game_scene.run()
+                scene = "LOBBY"
 
-            # (sau này mở rộng)
-            # if mode == 2:
-            #     GameScene(self.screen, mode=2).run()
+            self.clock.tick(60)
+
+        pygame.quit()
+        quit()
