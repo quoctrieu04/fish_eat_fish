@@ -27,7 +27,7 @@ class Lobby:
             y=200,
             w=240,
             h=55,
-            text="1 người chơi",
+            text="1 Player",
             font=self.font_btn,
             color=BLUE,
             hover_color=DARK_BLUE
@@ -37,7 +37,7 @@ class Lobby:
             y=260,
             w=240,
             h=55,
-            text="2 người chơi",
+            text="2 Player",
             font=self.font_btn,
             color=BLUE,
             hover_color=DARK_BLUE
@@ -49,7 +49,7 @@ class Lobby:
             y=320,
             w=240,
             h=55,
-            text="Thoát",
+            text="Exit",
             font=self.font_btn,
             color=BLUE,
             hover_color=DARK_BLUE
@@ -61,7 +61,7 @@ class Lobby:
             y=380,
             w=240,
             h=55,
-            text="Cài đặt",
+            text="Setting",
             font=self.font_btn,
             color=(200, 60, 60),
             hover_color=(160, 40, 40)
@@ -99,8 +99,8 @@ class Lobby:
                     quit()
                     
                 if self.btn1_player_btn.is_clicked(event):
-                    print("👉 Chọn chế độ 1 người chơi")
-                    running = False   # sau này đổi sang scene chọn cá
+                   # print("👉 Chọn chế độ 1 người chơi")   
+                    return 1   # sau này đổi sang scene chọn cá
                 if self.btn2_player_btn.is_clicked(event):
                     print("👉 Chọn chế độ 2 người chơi")
                     running = False   # sau này đổi sang scene chọn cá
