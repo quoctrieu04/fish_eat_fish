@@ -7,7 +7,7 @@ class Player(pygame.sprite.Sprite):
     def __init__(self, x, y, fish_index=0):
         super().__init__()
 
-        # ===== LOAD BODY & TAIL THEO CÁ ĐƯỢC CHỌN =====
+        # ===== LOAD BODY & TAIL =====
         fish_path = os.path.join(
             "assets", "player", f"fish_{fish_index + 1}"
         )
@@ -24,15 +24,18 @@ class Player(pygame.sprite.Sprite):
         self.base_scale = 1.0
         self.scale = self.base_scale
         self.score = 0
-
         self._rescale_parts()
 
-        # ===== POSITION (WORLD POSITION) =====
+        # ===== POSITION =====
         self.rect = self.body.get_rect(center=(x, y))
 
         # ===== MOVEMENT =====
         self.speed = 5
-        self.direction = 1   # 1 = phải, -1 = trái
+        self.vel = pygame.Vector2(0, 0)
+
+        self.angle = 0            # góc hiện tại
+        self.angle_target = 0     # góc mục tiêu
+        self.facing = 1           # 1 = phải, -1 = trái
 
         # ===== TAIL ANIMATION =====
         self.tail_speed = 0.012
@@ -46,7 +49,7 @@ class Player(pygame.sprite.Sprite):
             (
                 int(self.body_img.get_width() * self.scale),
                 int(self.body_img.get_height() * self.scale),
-            ),
+            )
         )
 
         self.tail = pygame.transform.smoothscale(
@@ -54,7 +57,7 @@ class Player(pygame.sprite.Sprite):
             (
                 int(self.tail_img.get_width() * self.scale),
                 int(self.tail_img.get_height() * self.scale),
-            ),
+            )
         )
 
     # ==================================================
@@ -69,47 +72,59 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.body.get_rect(center=center)
 
     # ==================================================
-    # UPDATE LOGIC (KHÔNG CLAMP)
+    # UPDATE LOGIC (KHÔNG NGỬA BỤNG)
     # ==================================================
     def update(self):
         keys = pygame.key.get_pressed()
+        self.vel.update(0, 0)
 
         if keys[pygame.K_LEFT]:
-            self.rect.x -= self.speed
-            self.direction = -1
-
+            self.vel.x = -1
+            self.facing = -1
         if keys[pygame.K_RIGHT]:
-            self.rect.x += self.speed
-            self.direction = 1
-
+            self.vel.x = 1
+            self.facing = 1
         if keys[pygame.K_UP]:
-            self.rect.y -= self.speed
-
+            self.vel.y = -1
         if keys[pygame.K_DOWN]:
-            self.rect.y += self.speed
+            self.vel.y = 1
+
+        if self.vel.length() > 0:
+            self.vel = self.vel.normalize()
+            self.rect.center += self.vel * self.speed
+
+            # ⭐ GÓC XOAY CHỈ THEO TRỤC Y (±90°)
+            self.angle_target = -math.degrees(
+                math.atan2(self.vel.y, abs(self.vel.x))
+            )
+        else:
+            # đứng yên → cá nằm ngang
+            self.angle_target = 0
+
+        # ⭐ XOAY MƯỢT DẦN
+        self.angle += (self.angle_target - self.angle) * 0.15
 
     # ==================================================
-    # DRAW PLAYER (THEO CAMERA OFFSET)
+    # DRAW PLAYER
     # ==================================================
     def draw(self, screen, offset):
-        angle = math.sin(
+        # Vẫy đuôi
+        tail_angle = math.sin(
             pygame.time.get_ticks() * self.tail_speed
         ) * 18
 
-        tail_rot = pygame.transform.rotate(self.tail, angle)
+        tail_rot = pygame.transform.rotate(self.tail, tail_angle)
 
+        # Ghép body + tail
         w = self.body.get_width() + self.tail.get_width()
         h = max(self.body.get_height(), self.tail.get_height())
         surf = pygame.Surface((w, h), pygame.SRCALPHA)
 
         center_y = h // 2
-        tail_offset_y = int(self.body.get_height() * 0.05)
         pivot_x = int(self.tail.get_width() * 0.9)
 
-        tail_rect = tail_rot.get_rect()
-        tail_rect.center = (
-            pivot_x,
-            center_y + tail_offset_y
+        tail_rect = tail_rot.get_rect(
+            center=(pivot_x, center_y)
         )
 
         body_x = pivot_x + 4
@@ -118,7 +133,11 @@ class Player(pygame.sprite.Sprite):
         surf.blit(tail_rot, tail_rect)
         surf.blit(self.body, (body_x, body_y))
 
-        if self.direction == -1:
+        # ⭐ XOAY LÊN / XUỐNG
+        surf = pygame.transform.rotate(surf, self.angle)
+
+        # ⭐ QUAY TRÁI = LẬT NGANG (KHÔNG LẬT BỤNG)
+        if self.facing == -1:
             surf = pygame.transform.flip(surf, True, False)
 
         screen.blit(

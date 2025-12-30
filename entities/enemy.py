@@ -35,6 +35,69 @@ ENEMY_TYPES = [
         "tail_speed": (0.015, 0.020),
         "tail_anchor": {"x": 0.01, "y": 0.50},
     },
+    {
+        "name": "fish_04",
+        "folder": "fish_4",
+        "face": "right",   # ⚠️ ảnh gốc quay trái
+        "scale": (0.22, 0.28),
+        "speed": (1, 2),
+        "tail_speed": (0.015, 0.020),
+        "tail_anchor": {"x": 0.01, "y": 0.50},
+    },
+    {
+        "name": "fish_05",
+        "folder": "fish_5",
+        "face": "right",   # ⚠️ ảnh gốc quay trái
+        "scale": (0.22, 0.28),
+        "speed": (1, 2),
+        "tail_speed": (0.015, 0.020),
+        "tail_anchor": {"x": 0.01, "y": 0.50},
+    },
+    {
+        "name": "fish_06",
+        "folder": "fish_6",
+        "face": "right",   # ⚠️ ảnh gốc quay trái
+        "scale": (0.22, 0.28),
+        "speed": (1, 2),
+        "tail_speed": (0.015, 0.020),
+        "tail_anchor": {"x": 0.01, "y": 0.50},
+    },
+    {
+        "name": "fish_07",
+        "folder": "fish_7",
+        "face": "right",   # ⚠️ ảnh gốc quay trái
+        "scale": (0.22, 0.28),
+        "speed": (1, 2),
+        "tail_speed": (0.015, 0.020),
+        "tail_anchor": {"x": 0.01, "y": 0.50},
+    },
+    {
+        "name": "fish_08",
+        "folder": "fish_8",
+        "face": "right",   # ⚠️ ảnh gốc quay trái
+        "scale": (0.22, 0.28),
+        "speed": (1, 2),
+        "tail_speed": (0.015, 0.020),
+        "tail_anchor": {"x": 0.01, "y": 0.50},
+    },
+    {
+        "name": "fish_09",
+        "folder": "fish_9",
+        "face": "right",   # ⚠️ ảnh gốc quay trái
+        "scale": (0.22, 0.28),
+        "speed": (1, 2),
+        "tail_speed": (0.015, 0.020),
+        "tail_anchor": {"x": 0.01, "y": 0.50},
+    },
+    {
+        "name": "fish_10",
+        "folder": "fish_10",
+        "face": "left",   # ⚠️ ảnh gốc quay trái
+        "scale": (0.22, 0.28),
+        "speed": (1, 2),
+        "tail_speed": (0.015, 0.020),
+        "tail_anchor": {"x": 0.01, "y": 0.50},
+    },
 ]
 
 
