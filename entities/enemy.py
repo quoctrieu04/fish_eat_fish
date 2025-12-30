@@ -5,98 +5,107 @@ import os
 
 # ==================================================
 # CẤU HÌNH CÁC LOẠI MỒI
-# face: hướng ảnh gốc ("right" hoặc "left")
 # ==================================================
 ENEMY_TYPES = [
     {
         "name": "small_fish",
         "folder": "fish_1",
-        "face": "left",   # ⚠️ ảnh gốc quay trái
-        "scale": (0.20, 0.25),
+        "face": "left",
+        "scale": (0.40, 0.45),
         "speed": (1, 2),
         "tail_speed": (0.010, 0.018),
         "tail_anchor": {"x": 0.01, "y": 0.50},
+        "score": 10,
     },
     {
         "name": "shark",
         "folder": "fish_2",
-        "face": "right",  # ⚠️ ảnh gốc quay phải
-        "scale": (0.26, 0.32),
-        "speed": (1, 2),
-        "tail_speed": (0.009, 0.013),
-        "tail_anchor": {"x": 0.01, "y": 0.50},
+        "face": "right",
+        "scale": (1.2, 1.5),
+        "speed": (1, 1),
+        "tail_speed": (0.01, 0.02),
+        "tail_anchor": {"x": -0.09, "y": 0.4},
+        "score": 50,
     },
     {
         "name": "fast_fish",
         "folder": "fish_3",
-        "face": "right",   # ⚠️ ảnh gốc quay trái
+        "face": "right",
         "scale": (0.22, 0.28),
         "speed": (1, 2),
         "tail_speed": (0.015, 0.020),
         "tail_anchor": {"x": 0.01, "y": 0.50},
+        "score": 5,
     },
     {
         "name": "fish_04",
         "folder": "fish_4",
-        "face": "right",   # ⚠️ ảnh gốc quay trái
+        "face": "right",
         "scale": (0.22, 0.28),
         "speed": (1, 2),
         "tail_speed": (0.015, 0.020),
         "tail_anchor": {"x": 0.01, "y": 0.50},
+        "score": 2,
     },
     {
         "name": "fish_05",
         "folder": "fish_5",
-        "face": "right",   # ⚠️ ảnh gốc quay trái
-        "scale": (0.22, 0.28),
+        "face": "right",
+        "scale": (0.5, 0.55),
         "speed": (1, 2),
         "tail_speed": (0.015, 0.020),
         "tail_anchor": {"x": 0.01, "y": 0.50},
+        "score": 10,
     },
     {
         "name": "fish_06",
         "folder": "fish_6",
-        "face": "right",   # ⚠️ ảnh gốc quay trái
-        "scale": (0.22, 0.28),
+        "face": "right",
+        "scale": (2.0, 2.2),
         "speed": (1, 2),
         "tail_speed": (0.015, 0.020),
-        "tail_anchor": {"x": 0.01, "y": 0.50},
+        "tail_anchor": {"x": -0.03, "y": 0.55},
+        "score": 100,
     },
     {
         "name": "fish_07",
         "folder": "fish_7",
-        "face": "right",   # ⚠️ ảnh gốc quay trái
-        "scale": (0.22, 0.28),
+        "face": "right",
+        "scale": (0.6, 0.65),
         "speed": (1, 2),
         "tail_speed": (0.015, 0.020),
         "tail_anchor": {"x": 0.01, "y": 0.50},
+        "score": 5,
     },
     {
         "name": "fish_08",
         "folder": "fish_8",
-        "face": "right",   # ⚠️ ảnh gốc quay trái
+        "face": "right",
         "scale": (0.22, 0.28),
         "speed": (1, 2),
         "tail_speed": (0.015, 0.020),
         "tail_anchor": {"x": 0.01, "y": 0.50},
+        "score": 10,
     },
     {
         "name": "fish_09",
         "folder": "fish_9",
-        "face": "right",   # ⚠️ ảnh gốc quay trái
-        "scale": (0.22, 0.28),
+        "face": "right",
+        "scale": (0.4, 0.45),
         "speed": (1, 2),
         "tail_speed": (0.015, 0.020),
         "tail_anchor": {"x": 0.01, "y": 0.50},
+        "score": 20,
     },
     {
         "name": "fish_10",
         "folder": "fish_10",
-        "face": "left",   # ⚠️ ảnh gốc quay trái
+        "face": "left",
         "scale": (0.22, 0.28),
         "speed": (1, 2),
         "tail_speed": (0.015, 0.020),
         "tail_anchor": {"x": 0.01, "y": 0.50},
+        "score": 4,
     },
 ]
 
@@ -113,12 +122,11 @@ class Enemy(pygame.sprite.Sprite):
         self.body_img = pygame.image.load(
             os.path.join(fish_path, "body.png")
         ).convert_alpha()
-
         self.tail_img = pygame.image.load(
             os.path.join(fish_path, "tail.png")
         ).convert_alpha()
 
-        # ===== CHUẨN HÓA HƯỚNG (TẤT CẢ QUAY PHẢI) =====
+        # ===== CHUẨN HÓA HƯỚNG (ẢNH GỐC → QUAY PHẢI) =====
         if self.type["face"] == "left":
             self.body_img = pygame.transform.flip(self.body_img, True, False)
             self.tail_img = pygame.transform.flip(self.tail_img, True, False)
@@ -126,12 +134,21 @@ class Enemy(pygame.sprite.Sprite):
         # ===== SCALE =====
         self.scale = random.uniform(*self.type["scale"])
 
+        # 🔑 SIZE DÙNG LOGIC
+        self.size = self.scale
+
+        # 🔑 SIZE HIỂN THỊ (5, 10, 50...)
+        self.size_value = int(self.scale * 10)
+
+        # 🔑 ĐIỂM
+        self.score = self.type["score"]
+
         self.body = pygame.transform.smoothscale(
             self.body_img,
             (
                 int(self.body_img.get_width() * self.scale),
                 int(self.body_img.get_height() * self.scale),
-            ),
+            )
         )
 
         self.tail = pygame.transform.smoothscale(
@@ -139,7 +156,7 @@ class Enemy(pygame.sprite.Sprite):
             (
                 int(self.tail_img.get_width() * self.scale),
                 int(self.tail_img.get_height() * self.scale),
-            ),
+            )
         )
 
         self.tail_anchor = self.type["tail_anchor"]
@@ -174,30 +191,25 @@ class Enemy(pygame.sprite.Sprite):
     # DRAW
     # ==================================================
     def draw(self, screen, camera_offset):
-        # ===== QUẪY ĐUÔI =====
         angle = math.sin(pygame.time.get_ticks() * self.tail_speed) * 15
         tail_rot = pygame.transform.rotate(self.tail, angle)
 
-        # ===== SURFACE GHÉP =====
         w = self.body.get_width() + self.tail.get_width() + 20
         h = max(self.body.get_height(), self.tail.get_height())
         surf = pygame.Surface((w, h), pygame.SRCALPHA)
 
         center_y = h // 2
 
-        # ===== BODY =====
         body_x = self.tail.get_width()
         body_y = center_y - self.body.get_height() // 2
         surf.blit(self.body, (body_x, body_y))
 
-        # ===== TAIL (GẮN SAU THÂN) =====
         attach_x = body_x + int(self.body.get_width() * self.tail_anchor["x"])
         attach_y = body_y + int(self.body.get_height() * self.tail_anchor["y"])
 
         tail_rect = tail_rot.get_rect(center=(attach_x, attach_y))
         surf.blit(tail_rot, tail_rect)
 
-        # ===== HƯỚNG BƠI =====
         if self.direction == -1:
             surf = pygame.transform.flip(surf, True, False)
 

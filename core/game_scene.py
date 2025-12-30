@@ -23,7 +23,7 @@ class GameScene:
         self.map_data = MAPS[self.map_index]
         self.load_map()
 
-        # ===== PLAYER (WORLD POSITION) =====
+        # ===== PLAYER =====
         self.player = Player(
             SCREEN_WIDTH // 2,
             SCREEN_HEIGHT // 2,
@@ -32,7 +32,7 @@ class GameScene:
 
         self.enemies = pygame.sprite.Group()
         self.spawn_timer = 0
-        self.score = 0
+        self.game_over = False
 
     # ==================================================
     # LOAD MAP
@@ -48,7 +48,7 @@ class GameScene:
         self.camera_offset.update(0, 0)
 
     # ==================================================
-    # UPDATE CAMERA (FREE – KHÔNG GIỚI HẠN)
+    # UPDATE CAMERA
     # ==================================================
     def update_camera(self):
         self.camera_offset.x = (
@@ -75,6 +75,65 @@ class GameScene:
                 )
 
     # ==================================================
+    # THANH KÍCH THƯỚC (%)
+    # ==================================================
+    
+
+    # ==================================================
+    # HIỂN THỊ SIZE SỐ TRÊN ĐẦU ENEMY
+    # ==================================================
+    def draw_enemy_size(self, enemy):
+        text = self.font.render(
+            str(enemy.size_value),
+            True,
+            WHITE
+        )
+
+        pos = (
+            enemy.rect.centerx - self.camera_offset.x - text.get_width() // 2,
+            enemy.rect.top - self.camera_offset.y - 24
+        )
+        self.screen.blit(text, pos)
+
+    # ==================================================
+    # HIỂN THỊ SIZE SỐ CỦA PLAYER (GIỮA MÀN HÌNH)
+    # ==================================================
+    def draw_player_size(self):
+        text = self.font.render(
+            f"{self.player.size_value}",
+            True,
+            WHITE
+        )
+
+        pos = (
+            SCREEN_WIDTH // 2 - text.get_width() // 2,
+            SCREEN_HEIGHT // 2 - 70
+        )
+        self.screen.blit(text, pos)
+
+    # ==================================================
+    # COLLISION LOGIC
+    # ==================================================
+    def handle_collision(self):
+        hits = pygame.sprite.spritecollide(
+            self.player, self.enemies, False
+        )
+
+        for enemy in hits:
+            player_area = (
+                self.player.rect.width * self.player.rect.height
+            )
+            enemy_area = (
+                enemy.rect.width * enemy.rect.height
+            )
+
+            if player_area >= enemy_area * EAT_RATIO:
+                self.player.grow(enemy.size, enemy.score)
+                enemy.kill()
+            else:
+                self.game_over = True
+
+    # ==================================================
     # RUN
     # ==================================================
     def run(self):
@@ -92,10 +151,17 @@ class GameScene:
                     if event.key == pygame.K_ESCAPE:
                         running = False
 
+            if self.game_over:
+                running = False
+                continue
+
             # ===== SPAWN ENEMY =====
             self.spawn_timer += 1
             if self.spawn_timer >= self.spawn_rate:
-                enemy = Enemy(self.enemy_speed,self.player.rect.center)
+                enemy = Enemy(
+                    self.enemy_speed,
+                    self.player.rect.center
+                )
                 self.enemies.add(enemy)
                 self.spawn_timer = 0
 
@@ -105,50 +171,37 @@ class GameScene:
             self.update_camera()
 
             # ===== COLLISION =====
-            hits = pygame.sprite.spritecollide(
-                self.player, self.enemies, True
-            )
-            for _ in hits:
-                self.score += 1
-                self.player.grow(1)
+            self.handle_collision()
 
             # ===== CHANGE MAP =====
             target = self.map_data["score_to_next"]
-            if target and self.score >= target:
+            if target and self.player.score >= target:
                 self.map_index += 1
                 if self.map_index < len(MAPS):
                     self.map_data = MAPS[self.map_index]
                     self.load_map()
                     self.enemies.empty()
 
-            # ===== DRAW BACKGROUND (TILE) =====
+            # ===== DRAW =====
             self.draw_tiled_background()
 
-            # ===== DRAW ENEMY =====
             for enemy in self.enemies:
-                enemy.draw(
-                    self.screen,
-                    self.camera_offset
-                )   
+                enemy.draw(self.screen, self.camera_offset)
+                self.draw_enemy_size(enemy)   # ⭐ số trên đầu cá địch
 
-            # ===== DRAW PLAYER =====
-            self.player.draw(
-                self.screen,
-                self.camera_offset
-            )
+            self.player.draw(self.screen, self.camera_offset)
 
-            # ===== UI (KHÔNG THEO CAMERA) =====
+            # ===== UI =====
             self.screen.blit(
-                self.font.render(f"Điểm: {self.score}", True, WHITE),
+                self.font.render(f"Điểm: {self.player.score}", True, WHITE),
                 (20, 20),
             )
             self.screen.blit(
-                self.font.render(
-                    f"Map {self.map_data['id']}",
-                    True,
-                    WHITE
-                ),
+                self.font.render(f"Map {self.map_data['id']}", True, WHITE),
                 (20, 50),
             )
+
+              
+            self.draw_player_size()   # ⭐ size số của player
 
             pygame.display.flip()

@@ -23,7 +23,9 @@ class Player(pygame.sprite.Sprite):
         # ===== SCALE =====
         self.base_scale = 1.0
         self.scale = self.base_scale
+        self.max_scale = 2.5        # to tối đa
         self.score = 0
+
         self._rescale_parts()
 
         # ===== POSITION =====
@@ -33,12 +35,15 @@ class Player(pygame.sprite.Sprite):
         self.speed = 5
         self.vel = pygame.Vector2(0, 0)
 
-        self.angle = 0            # góc hiện tại
-        self.angle_target = 0     # góc mục tiêu
-        self.facing = 1           # 1 = phải, -1 = trái
+        self.angle = 0
+        self.angle_target = 0
+        self.facing = 1     # 1 = phải, -1 = trái
 
         # ===== TAIL ANIMATION =====
         self.tail_speed = 0.012
+
+        # ===== SIZE (LOGIC) =====
+        self.size = self.scale
 
     # ==================================================
     # SCALE BODY + TAIL
@@ -61,11 +66,15 @@ class Player(pygame.sprite.Sprite):
         )
 
     # ==================================================
-    # KHI ĂN MỒI → CÁ TO DẦN
+    # KHI ĂN MỒI → TO DẦN
     # ==================================================
-    def grow(self, amount=1):
-        self.score += amount
-        self.scale = min(self.base_scale + self.score * 0.03, 1.35)
+    def grow(self, enemy_size, enemy_score):
+        self.score += enemy_score
+
+        # to dần theo size mồi
+        self.scale += enemy_size * 0.03
+        self.scale = min(self.scale, self.max_scale)
+        self.size = self.scale
 
         center = self.rect.center
         self._rescale_parts()
@@ -93,29 +102,28 @@ class Player(pygame.sprite.Sprite):
             self.vel = self.vel.normalize()
             self.rect.center += self.vel * self.speed
 
-            # ⭐ GÓC XOAY CHỈ THEO TRỤC Y (±90°)
+            # góc xoay ±90° (không lật bụng)
             self.angle_target = -math.degrees(
                 math.atan2(self.vel.y, abs(self.vel.x))
             )
         else:
-            # đứng yên → cá nằm ngang
             self.angle_target = 0
 
-        # ⭐ XOAY MƯỢT DẦN
+        # xoay mượt
         self.angle += (self.angle_target - self.angle) * 0.15
 
     # ==================================================
     # DRAW PLAYER
     # ==================================================
     def draw(self, screen, offset):
-        # Vẫy đuôi
+        # ===== VẪY ĐUÔI =====
         tail_angle = math.sin(
             pygame.time.get_ticks() * self.tail_speed
         ) * 18
 
         tail_rot = pygame.transform.rotate(self.tail, tail_angle)
 
-        # Ghép body + tail
+        # ===== GHÉP BODY + TAIL =====
         w = self.body.get_width() + self.tail.get_width()
         h = max(self.body.get_height(), self.tail.get_height())
         surf = pygame.Surface((w, h), pygame.SRCALPHA)
@@ -133,10 +141,10 @@ class Player(pygame.sprite.Sprite):
         surf.blit(tail_rot, tail_rect)
         surf.blit(self.body, (body_x, body_y))
 
-        # ⭐ XOAY LÊN / XUỐNG
+        # ===== XOAY LÊN / XUỐNG =====
         surf = pygame.transform.rotate(surf, self.angle)
 
-        # ⭐ QUAY TRÁI = LẬT NGANG (KHÔNG LẬT BỤNG)
+        # ===== QUAY TRÁI / PHẢI (KHÔNG LẬT BỤNG) =====
         if self.facing == -1:
             surf = pygame.transform.flip(surf, True, False)
 
@@ -144,3 +152,10 @@ class Player(pygame.sprite.Sprite):
             surf,
             surf.get_rect(center=self.rect.center - offset)
         )
+
+    # ==================================================
+    # GIÁ TRỊ KÍCH THƯỚC HIỂN THỊ (10, 20, 50...)
+    # ==================================================
+    @property
+    def size_value(self):
+        return int(self.scale * 10)

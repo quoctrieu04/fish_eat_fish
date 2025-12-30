@@ -3,7 +3,7 @@ MAPS = [
     {
         "id": 1,
         "background": "assets/backgrounds/map1.jpg",
-        "score_to_next": 10,
+        "score_to_next": 100,
         "enemy_speed": (2, 3),
         "spawn_rate": 60,
         "scoll": False
@@ -11,7 +11,7 @@ MAPS = [
     {
         "id": 2,
         "background": "assets/backgrounds/map2.jpg",
-        "score_to_next": 25,
+        "score_to_next": 200,
         "enemy_speed": (3, 4),
         "spawn_rate": 45,
         "scoll": False
